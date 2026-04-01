@@ -3,9 +3,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
-// import AdminPanel from "./pages/AdminPanel";
-// import ManageClasses from "./pages/ManageClasses";
-// import Unauthorized from "./pages/Unauthorized";
+import AdminPanel from "./pages/AdminPanel";
+import ManageClasses from "./pages/ManageClasses";
+import Unauthorized from "./pages/Unauthorized";
 export default function App() {
   return (
     <Routes>
