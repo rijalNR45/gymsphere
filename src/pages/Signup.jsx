@@ -1,22 +1,23 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { Dumbbell, Mail, Lock, Loader2 } from "lucide-react";
+import { Dumbbell, Mail, Lock, User, Loader2 } from "lucide-react";
 
-export default function Login() {
-  const { signIn } = useAuth();
+export default function Signup() {
+  const { signUp } = useAuth();
   const navigate = useNavigate();
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      await signIn(email, password);
+      await signUp(email, password, fullName);
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -32,8 +33,8 @@ export default function Login() {
           <Dumbbell className="mx-auto h-16 w-16 text-primary mb-8" />
           <h1 className="text-3xl font-bold text-white mb-4">GymSphere</h1>
           <p className="text-gray-400 text-lg leading-relaxed">
-            Your complete gym management solution. Track members, manage classes,
-            and grow your fitness business.
+            Join our community. Start managing your fitness journey today with
+            powerful tools at your fingertips.
           </p>
         </div>
       </div>
@@ -46,10 +47,10 @@ export default function Login() {
           </div>
 
           <h2 className="text-2xl font-bold text-text-primary leading-tight">
-            Welcome back
+            Create account
           </h2>
           <p className="mt-2 text-sm text-text-secondary">
-            Sign in to your account to continue
+            Sign up to get started with GymSphere
           </p>
 
           {error && (
@@ -58,7 +59,24 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="mt-8 space-y-5">
+          <form onSubmit={handleSignup} className="mt-8 space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Full Name
+              </label>
+              <div className="relative">
+                <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="John Doe"
+                  required
+                  className="w-full rounded-lg border border-border bg-surface py-3 pl-10 pr-4 text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
                 Email
@@ -86,11 +104,15 @@ export default function Login() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="Create a password"
                   required
+                  minLength={6}
                   className="w-full rounded-lg border border-border bg-surface py-3 pl-10 pr-4 text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
+              <p className="mt-1.5 text-xs text-text-muted">
+                Must be at least 6 characters
+              </p>
             </div>
 
             <button
@@ -99,14 +121,14 @@ export default function Login() {
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed mt-2"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? "Creating account..." : "Create Account"}
             </button>
           </form>
 
           <p className="mt-8 text-center text-sm text-text-secondary">
-            Don&apos;t have an account?{" "}
-            <Link to="/signup" className="font-medium text-primary hover:text-primary-hover">
-              Create one
+            Already have an account?{" "}
+            <Link to="/login" className="font-medium text-primary hover:text-primary-hover">
+              Sign in
             </Link>
           </p>
         </div>
