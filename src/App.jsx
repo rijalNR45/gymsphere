@@ -10,6 +10,7 @@ import Members from "./pages/Members";
 import Trainers from "./pages/Trainers";
 import Profile from "./pages/Profile";
 import Unauthorized from "./pages/Unauthorized";
+import ForgotPassword from "./pages/ForgotPassword";
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
 
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
       <Route
