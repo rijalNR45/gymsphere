@@ -51,10 +51,14 @@ export default function MyBookings() {
     try {
       const { error } = await supabase
         .from("bookings")
-        .delete()
+        .update({ status: "cancelled" })
         .eq("id", bookingId);
       if (error) throw error;
-      setBookings((prev) => prev.filter((b) => b.id !== bookingId));
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === bookingId ? { ...b, status: "cancelled" } : b
+        )
+      );
     } catch (err) {
       console.error("Cancel failed:", err);
       alert(err.message);

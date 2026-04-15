@@ -11,6 +11,7 @@ import {
   Dumbbell,
   Clock,
   Loader2,
+  XCircle,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -264,6 +265,7 @@ function MemberDashboard({ profile }) {
   const [memberRecord, setMemberRecord] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bookingInProgress, setBookingInProgress] = useState(null);
+  const [cancellingId, setCancellingId] = useState(null);
 
   useEffect(() => {
     async function fetchMemberData() {
@@ -325,6 +327,28 @@ function MemberDashboard({ profile }) {
     }
   }
 
+  async function handleCancelBooking(bookingId) {
+    if (!window.confirm("Cancel this booking?")) return;
+    setCancellingId(bookingId);
+    try {
+      const { error } = await supabase
+        .from("bookings")
+        .update({ status: "cancelled" })
+        .eq("id", bookingId);
+      if (error) throw error;
+      setMyBookings((prev) =>
+        prev.map((b) =>
+          b.id === bookingId ? { ...b, status: "cancelled" } : b
+        )
+      );
+    } catch (err) {
+      console.error("Cancel failed:", err);
+      alert(err.message);
+    } finally {
+      setCancellingId(null);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -333,7 +357,9 @@ function MemberDashboard({ profile }) {
     );
   }
 
-  const bookedClassIds = new Set(myBookings.map((b) => b.class_id));
+  const bookedClassIds = new Set(
+    myBookings.filter((b) => b.status === "confirmed").map((b) => b.class_id)
+  );
 
   return (
     <>
@@ -394,21 +420,33 @@ function MemberDashboard({ profile }) {
                     Capacity: {cls.capacity}
                   </p>
                 </div>
-                <button
-                  onClick={() => handleBookClass(cls.id)}
-                  disabled={isBooked || bookingInProgress === cls.id}
-                  className={`mt-5 w-full rounded-lg px-4 py-2.5 text-sm font-medium ${
-                    isBooked
-                      ? "bg-green-50 text-success cursor-default"
-                      : "bg-primary text-white hover:bg-primary-hover disabled:opacity-50"
-                  }`}
-                >
-                  {bookingInProgress === cls.id
-                    ? "Booking..."
-                    : isBooked
-                      ? "Booked"
-                      : "Book Class"}
-                </button>
+                {isBooked ? (
+                  <button
+                    onClick={() => {
+                      const booking = myBookings.find(
+                        (b) => b.class_id === cls.id && b.status === "confirmed"
+                      );
+                      if (booking) handleCancelBooking(booking.id);
+                    }}
+                    disabled={cancellingId !== null}
+                    className="mt-5 w-full rounded-lg border border-danger px-4 py-2.5 text-sm font-medium text-danger hover:bg-red-50 disabled:opacity-50"
+                  >
+                    {cancellingId &&
+                    myBookings.find(
+                      (b) => b.class_id === cls.id && b.status === "confirmed"
+                    )?.id === cancellingId
+                      ? "Cancelling..."
+                      : "Cancel Booking"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleBookClass(cls.id)}
+                    disabled={bookingInProgress === cls.id}
+                    className="mt-5 w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-50"
+                  >
+                    {bookingInProgress === cls.id ? "Booking..." : "Book Class"}
+                  </button>
+                )}
               </div>
             );
           })}
@@ -443,6 +481,9 @@ function MemberDashboard({ profile }) {
                   <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-text-muted">
                     Booked
                   </th>
+                  <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-text-muted">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -461,6 +502,20 @@ function MemberDashboard({ profile }) {
                     </td>
                     <td className="px-6 py-4 text-text-secondary">
                       {new Date(booking.booked_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      {booking.status === "confirmed" ? (
+                        <button
+                          onClick={() => handleCancelBooking(booking.id)}
+                          disabled={cancellingId === booking.id}
+                          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-danger hover:bg-red-50 disabled:opacity-50"
+                        >
+                          <XCircle className="h-3.5 w-3.5" />
+                          {cancellingId === booking.id ? "Cancelling..." : "Cancel"}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-text-muted">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}
