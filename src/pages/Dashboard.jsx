@@ -12,6 +12,7 @@ import {
   Clock,
   Loader2,
   XCircle,
+  CreditCard,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -43,7 +44,7 @@ function AdminDashboard() {
   useEffect(() => {
     async function fetchAdminData() {
       try {
-        const [membersRes, trainersRes, classesRes, bookingsRes, recentRes] =
+        const [membersRes, trainersRes, classesRes, bookingsRes, recentRes, pendingSubsRes] =
           await Promise.all([
             supabase.from("members").select("*", { count: "exact", head: true }),
             supabase.from("trainers").select("*", { count: "exact", head: true }),
@@ -54,6 +55,10 @@ function AdminDashboard() {
               .select("id, full_name, email, role, created_at")
               .order("created_at", { ascending: false })
               .limit(5),
+            supabase
+              .from("subscriptions")
+              .select("*", { count: "exact", head: true })
+              .eq("status", "pending"),
           ]);
 
         setStats({
@@ -61,6 +66,7 @@ function AdminDashboard() {
           trainers: trainersRes.count || 0,
           classes: classesRes.count || 0,
           bookings: bookingsRes.count || 0,
+          pendingSubs: pendingSubsRes.count || 0,
         });
         setRecentMembers(recentRes.data || []);
       } catch (err) {
@@ -82,11 +88,12 @@ function AdminDashboard() {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard icon={Users} title="Total Members" value={stats.members} color="primary" />
         <StatCard icon={Award} title="Trainers" value={stats.trainers} color="accent" />
         <StatCard icon={Dumbbell} title="Classes" value={stats.classes} color="success" />
         <StatCard icon={CalendarDays} title="Bookings" value={stats.bookings} color="warning" />
+        <StatCard icon={CreditCard} title="Pending Subs" value={stats.pendingSubs} subtitle="Awaiting confirmation" color="primary" />
       </div>
 
       <div className="mt-10 rounded-xl border border-border bg-surface">
@@ -263,6 +270,7 @@ function MemberDashboard({ profile }) {
   const [classes, setClasses] = useState([]);
   const [myBookings, setMyBookings] = useState([]);
   const [memberRecord, setMemberRecord] = useState(null);
+  const [activeSubs, setActiveSubs] = useState(0);
   const [loading, setLoading] = useState(true);
   const [bookingInProgress, setBookingInProgress] = useState(null);
   const [cancellingId, setCancellingId] = useState(null);
@@ -286,13 +294,21 @@ function MemberDashboard({ profile }) {
         setMemberRecord(memberRes.data);
 
         if (memberRes.data) {
-          const { data: bookingsData } = await supabase
-            .from("bookings")
-            .select("*, classes(title, schedule)")
-            .eq("member_id", memberRes.data.id)
-            .order("booked_at", { ascending: false })
-            .limit(5);
-          setMyBookings(bookingsData || []);
+          const [bookingsResult, subsResult] = await Promise.all([
+            supabase
+              .from("bookings")
+              .select("*, classes(title, schedule)")
+              .eq("member_id", memberRes.data.id)
+              .order("booked_at", { ascending: false })
+              .limit(5),
+            supabase
+              .from("subscriptions")
+              .select("*", { count: "exact", head: true })
+              .eq("member_id", memberRes.data.id)
+              .eq("status", "active"),
+          ]);
+          setMyBookings(bookingsResult.data || []);
+          setActiveSubs(subsResult.count || 0);
         }
       } catch (err) {
         console.error("Failed to load member data:", err);
@@ -363,7 +379,7 @@ function MemberDashboard({ profile }) {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={ClipboardList}
           title="Active Bookings"
@@ -375,6 +391,12 @@ function MemberDashboard({ profile }) {
           title="Available Classes"
           value={classes.length}
           color="accent"
+        />
+        <StatCard
+          icon={CreditCard}
+          title="Active Subscriptions"
+          value={activeSubs}
+          color="success"
         />
         <StatCard
           icon={CalendarDays}

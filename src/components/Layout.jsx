@@ -11,6 +11,8 @@ import {
   Dumbbell,
   Menu,
   X,
+  Package,
+  CreditCard,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -20,12 +22,16 @@ const NAVIGATION = {
   ],
   member: [
     { to: "/my-bookings", label: "My Bookings", icon: CalendarDays },
+    { to: "/my-subscriptions", label: "Subscriptions", icon: Package },
   ],
   trainer: [
     { to: "/classes/manage", label: "Manage Classes", icon: ClipboardList },
+    { to: "/subscriptions", label: "Subscriptions", icon: CreditCard },
   ],
   admin: [
     { to: "/classes/manage", label: "Manage Classes", icon: ClipboardList },
+    { to: "/packages", label: "Packages", icon: Package },
+    { to: "/subscriptions", label: "Subscriptions", icon: CreditCard },
     { to: "/members", label: "Members", icon: Users },
     { to: "/trainers", label: "Trainers", icon: Award },
     { to: "/admin", label: "User Management", icon: Users },

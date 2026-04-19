@@ -13,6 +13,9 @@ import Profile from "./pages/Profile";
 import Unauthorized from "./pages/Unauthorized";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Packages from "./pages/Packages";
+import Subscriptions from "./pages/Subscriptions";
+import MySubscriptions from "./pages/MySubscriptions";
 
 export default function App() {
   const { isRecovery } = useAuth();
@@ -67,6 +70,33 @@ export default function App() {
         element={
           <ProtectedRoute allowedRoles={["admin", "trainer"]}>
             <ManageClasses />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/packages"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <Packages />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/subscriptions"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "trainer"]}>
+            <Subscriptions />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/my-subscriptions"
+        element={
+          <ProtectedRoute allowedRoles={["member"]}>
+            <MySubscriptions />
           </ProtectedRoute>
         }
       />
