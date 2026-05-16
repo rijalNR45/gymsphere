@@ -4,7 +4,12 @@ GymSphere is a modern gym and fitness web application built using React.
 The project provides an interactive and responsive user interface for users to explore fitness services, workout programs, memberships, trainers, and more.
 
 ---
+##Live demo
+You can check the live demo at: 
 
+```bash
+https://gymsphere-nine.vercel.app/
+```
 ## Features
 
 - Responsive modern UI
